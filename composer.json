@@ -1,0 +1,20 @@
+{
+  "name": "simple/backend",
+  "authors": [
+    {
+      "name": "Edward Komissarov",
+      "email": "execrot@gmail.com"
+    }
+  ],
+  "repositories": [
+    {"type": "git", "url": "https://github.com/execrot/storage-client.git"},
+    {"type": "git", "url": "https://github.com/execrot/sender-client.git"}
+  ],
+  "require": {
+    "php" : ">=5.4",
+    "zendframework/zendframework1": "1.12.*",
+    "execrot/mongostar":            "dev-master",
+    "storage/client":               "dev-master",
+    "sender/client":                "dev-master"
+  }
+}
