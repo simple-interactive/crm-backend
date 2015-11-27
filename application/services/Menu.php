@@ -1,122 +1,126 @@
 <?php
 
-class App_Service_Menu {
+class App_Service_Menu
+{
+    /**
+     * @var string
+     */
+    private $_lastError;
 
     /**
-     * @param array $menuParams
-     * @return App_Model_Menu
+     * @param App_Model_User $user
+     * @param string $title
+     * @param string $imageBlob
+     *
+     * @return App_Model_Menu|bool
      */
-    public function create(array $menuParams)
+    public function create(App_Model_User $user, $title, $imageBlob)
     {
-        if ( empty($menuParams['name']))
-            throw new InvalidArgumentException('Name is empty', 400);
-
-        $image = $this->loadImage();
-
-        $menu = new App_Model_Menu(array_merge($menuParams, ['image' => $image]));
-
-        if ( ! $menu->save()){
-            throw new RuntimeException('Save failed');
+        $this->setLastError(null);
+        if (empty($title)){
+            $this->setLastError('Title is empty');
+            return false;
         }
-
-        return $menu;
-    }
-
-    protected function loadImage(){
-
-        $upload = new Zend_File_Transfer();
-
-        if ( !$upload->getFileInfo() && empty($upload->getFileInfo()['image'])) {
-            throw new InvalidArgumentException('Image is empty');
+        $image = $this->_loadImage($imageBlob);
+        if(!$image){
+            return false;
         }
-
-        $image = $upload->getFileInfo() ['image'];
-        $image = $this->renameFile($image);
-
-        $config = Zend_Registry::get('config');
-        $storage = new \Storage\Storage();
-        $storage->setToken($config['storage']['token']);
-
-        $files =  $storage->upload($image['name'], \Storage\Storage::FILE);
-        unlink($image['name']);
-
-        return [
-            'url' => $files[0]->getUrl(),
-            'identity' => $files[0]->getIdentity()
-        ];
-    }
-
-    protected function renameFile(array $image){
-        $newName = dirname($image['tmp_name']). DIRECTORY_SEPARATOR . $image['name'];
-
-        if ( ! rename($image['tmp_name'], $newName)){
-            throw new \RuntimeException('Can not rename image');
-        }
-
-        $image ['name'] = $newName;
-        return $image;
-    }
-
-    public function getAll($userId){
-        return App_Model_Menu::fetchAll();
-    }
-
-    public function delete($id, $userId){
-        $menu = $this->get($id);
-        return $menu->delete();
-    }
-
-    public function edit($id, $data){
-
-        $menu = $this->get($id);
-
-        if ( (string)$menu->userId != $data['userId']){
-            throw new Exception('Permission denied', 403);
-        }
-
-        if ($data ['name'] !== false && ! empty($data['name']))
-            $menu->name = $data ['name'];
-
-        try{
-            $image = $this->loadImage();
-            $this->deleteImageFromStorage($menu->image['identity']);
-            $menu->image = $image;
-        }catch (Exception $e){
-            if ($e->getMessage() != 'Image is empty') {
-                throw $e;
-            }
-        }
-
-        if ( ! $menu->save()){
-            throw new RuntimeException('Save failed!');
-        }
-
-        return $menu;
-    }
-
-
-    protected function get($id){
-
-        if ($id === false && empty($id)){
-            throw new InvalidArgumentException('Id invalid', 400);
-        }
-
-        $menu = App_Model_Menu::fetchOne([
-            'id' => $id
+        $menu = new App_Model_Menu([
+            'userId' => (string)$user->id,
+            'image' => $image,
+            'title' => $title
         ]);
-
-        if (! $menu){
-            throw new Exception('Menu not found', 404);
-        }
-
+        $menu->save();
         return $menu;
     }
 
-    protected function deleteImageFromStorage($identity){
-        $config = Zend_Registry::get('config');
+    /**
+     * @param string $imageBlob
+     * @return array|bool
+     */
+    private function _loadImage($imageBlob)
+    {
+        $data = explode(',', $imageBlob);
+        if (count($data) != 2){
+            $this->setLastError('Image invalid');
+            return false;
+        }
+        $image = base64_decode($data[1]);
         $storage = new \Storage\Storage();
-        $storage->setToken($config['storage']['token']);
+        $files =  $storage->upload([
+            'content' => $image,
+            'name' => md5(microtime()).'.png'
+        ], \Storage\Storage::DATA);
+        return $files[0]->asArray();
+    }
 
+    /**
+     * @param App_Model_User $user
+     * @return App_Model_Menu[]
+     */
+    public function getAll(App_Model_User $user)
+    {
+        return App_Model_Menu::fetchAll([
+            'userId' => (string) $user->id
+        ]);
+    }
+
+    /**
+     * @param App_Model_User $user
+     * @param string $menuId
+     * @param string $title
+     * @param string $imageBlob
+     *
+     * @return App_Model_User|bool|null
+     */
+    public function edit(App_Model_User $user, $menuId, $title, $imageBlob)
+    {
+        $menu = App_Model_Menu::fetchOne([
+            'id' => $menuId
+        ]);
+        if ( $menu->userId != (string) $user->id){
+            $this->setLastError('Permission denied.');
+            return false;
+        }
+        if (empty($title)){
+            $this->setLastError('Title is empty');
+            return false;
+        }
+        $menu->title = $title;
+        $image = $this->_loadImage($imageBlob);
+        if($image){
+            $this->_deleteImageFromStorage($menu->image['identity']);
+            $menu->image = $image;
+        }
+        $menu->save();
+        return $menu;
+    }
+
+    /**
+     * @param string $identity
+     *
+     * @return bool
+     */
+    private function _deleteImageFromStorage($identity)
+    {
+        $storage = new \Storage\Storage();
         return $storage->delete($identity);
     }
+
+    /**
+     * @param string $lastError
+     */
+    public function setLastError($lastError)
+    {
+        $this->_lastError = $lastError;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLastError()
+    {
+        return $this->_lastError;
+    }
+
 }

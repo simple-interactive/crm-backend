@@ -1,46 +1,51 @@
 <?php
 
-class MenuController extends App_Controller_Base {
+class MenuController extends App_Controller_Base
+{
 
-    private $menuService;
+    /**
+     * @var App_Service_Menu
+     */
+    private $_menuService;
 
     public function init()
     {
         parent::init();
-        $this->menuService = new App_Service_Menu;
+        $this->_menuService = new App_Service_Menu();
     }
 
-    public function addAction()
+    public function saveAction()
     {
-        $menu = $this->menuService->create([
-            'userId' => (string) $this->user->id,
-            'name' => $this->getParam('name', false)
-        ]);
-
-        $this->view->success = true;
-        $this->view->menu = App_Map_Menu::execute($menu, 'getOne');
-    }
-
-    public function getAction(){
-        $menus = $this->menuService->getAll((string)$this->user->id);
-        $this->view->success = true;
-        $this->view->menus = App_Map_Menu::execute($menus, 'getOne');
-    }
-
-    public function deleteAction(){
-        $this->view->success = $this->menuService->delete($this->getParam('id', false), (string) $this->user->id);
-    }
-
-    public function editAction(){
-        try{
-            $this->view->success = true;
-            $this->view->menu = App_Map_Menu::execute($this->menuService->edit($this->getParam('id', false),
-                ['userId' => (string) $this->user->id,
-                  'name' => $this->getParam('name', false),
-                ]), 'getOne');
-        }catch (Exception $e){
+        if (!$this->getParam('id', false)) {
+            $menu = $this->_menuService->create(
+                $this->user,
+                $this->getParam('title', false),
+                $this->getParam('image', false)
+            );
+        }
+        else {
+            $menu = $this->_menuService->edit(
+                $this->user,
+                $this->getParam('id', false),
+                $this->getParam('title', false),
+                $this->getParam('image', false)
+            );
+        }
+        if (!$menu) {
             $this->view->success = false;
-            throw $e;
+            $this->view->error = $this->_menuService->getLastError();
+        }
+        else {
+            $this->view->success = true;
+            $this->view->menu = App_Map_Menu::execute($menu);
         }
     }
+
+    public function getAction()
+    {
+        $menus = $this->_menuService->getAll($this->user);
+        $this->view->success = true;
+        $this->view->menus = App_Map_Menu::execute($menus);
+    }
+
 } 
