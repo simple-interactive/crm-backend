@@ -6,6 +6,16 @@ class App_Service_Menu
      * @var string
      */
     private $_lastError;
+    /**
+     * @var App_Service_Image
+     */
+    private $imageService;
+
+    public function __construct()
+    {
+        $this->imageService = new App_Service_Image();
+    }
+
 
     /**
      * @param App_Model_User $user
@@ -21,8 +31,9 @@ class App_Service_Menu
             $this->setLastError('Title is empty');
             return false;
         }
-        $image = $this->_loadImage($imageBlob);
+        $image = $this->imageService->loadImage($imageBlob);
         if(!$image){
+            $this->setLastError($this->imageService->getLastError());
             return false;
         }
         $menu = new App_Model_Menu([
@@ -32,26 +43,6 @@ class App_Service_Menu
         ]);
         $menu->save();
         return $menu;
-    }
-
-    /**
-     * @param string $imageBlob
-     * @return array|bool
-     */
-    private function _loadImage($imageBlob)
-    {
-        $data = explode(',', $imageBlob);
-        if (count($data) != 2){
-            $this->setLastError('Image invalid');
-            return false;
-        }
-        $image = base64_decode($data[1]);
-        $storage = new \Storage\Storage();
-        $files =  $storage->upload([
-            'content' => $image,
-            'name' => md5(microtime()).'.png'
-        ], \Storage\Storage::DATA);
-        return $files[0]->asArray();
     }
 
     /**
@@ -87,24 +78,13 @@ class App_Service_Menu
             return false;
         }
         $menu->title = $title;
-        $image = $this->_loadImage($imageBlob);
+        $image = $this->imageService->loadImage($imageBlob);
         if($image){
-            $this->_deleteImageFromStorage($menu->image['identity']);
+            $this->imageService->deleteImageFromStorage($menu->image['identity']);
             $menu->image = $image;
         }
         $menu->save();
         return $menu;
-    }
-
-    /**
-     * @param string $identity
-     *
-     * @return bool
-     */
-    private function _deleteImageFromStorage($identity)
-    {
-        $storage = new \Storage\Storage();
-        return $storage->delete($identity);
     }
 
     /**
