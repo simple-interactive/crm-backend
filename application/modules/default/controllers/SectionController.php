@@ -42,7 +42,7 @@ class SectionController extends App_Controller_Base
         }
     }
 
-    public function getAction()
+    public function indexAction()
     {
         $sections = $this->_sectionService->get(
             $this->user,
