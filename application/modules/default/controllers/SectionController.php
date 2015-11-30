@@ -16,12 +16,11 @@ class SectionController extends App_Controller_Base
     public function saveAction()
     {
         if(!$this->getParam('id', false)){
-            $section = $this->_sectionService->add(
-                App_Model_Menu::fetchOne(['id' => $this->getParam('menuId', false)]),
+            $section = $this->_sectionService->create(
                 $this->user,
                 $this->getParam('title', false),
                 $this->getParam('image', false),
-                $this->getParam('parentId', false)
+                $this->getParam('parentId', null)
             );
         }
         else {
@@ -30,7 +29,7 @@ class SectionController extends App_Controller_Base
                 $this->user,
                 $this->getParam('title', false),
                 $this->getParam('image', false),
-                $this->getParam('parentId', false)
+                $this->getParam('parentId', null)
             );
         }
         if ($section){
@@ -47,8 +46,8 @@ class SectionController extends App_Controller_Base
     {
         $sections = $this->_sectionService->get(
             $this->user,
-            App_Model_Menu::fetchOne(['id' => $this->getParam('menuId', false)])
-         );
+            $this->getParam('parentId', null)
+        );
         $this->view->success = true;
         $this->view->sections = App_Map_Section::execute($sections);
     }

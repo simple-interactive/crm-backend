@@ -2,7 +2,7 @@
 
 /**
  * @property MongoId $id
- * @property string $menuId
+ * @property string $userId
  * @property array $image
  * @property string $title
  * @property string $parentId

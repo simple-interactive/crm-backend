@@ -25,20 +25,16 @@ class App_Service_Section
      *
      * @return App_Model_Section|bool
      */
-    public function add(App_Model_Menu $menu, App_Model_User $user, $title, $imageBlob, $parentId)
+    public function create(App_Model_User $user, $title, $imageBlob, $parentId)
     {
-        if(!$menu || $menu->userId != (string) $user->id){
-            $this->setLastError('Menu invalid');
-            return false;
-        }
         if (!$title){
             $this->setLastError('Title empty');
             return false;
         }
-        if($parentId !== false && ! App_Model_Section::fetchOne(['id' => $parentId])){
-        $this->setLastError('Parent Id invalid!');
-        return false;
-    }
+        if($parentId !== null && ! App_Model_Section::fetchOne(['id' => $parentId])){
+            $this->setLastError('Parent Id invalid!');
+            return false;
+        }
         $image = $this->_imageService->loadImage($imageBlob);
         if (!$image)
         {
@@ -46,9 +42,9 @@ class App_Service_Section
             return false;
         }
         $section = new App_Model_Section([
-            'menuId' => (string)$menu->id,
             'title' => $title,
             'image' => $image,
+            'userId' => (string) $user->id,
             'parentId' => $parentId
         ]);
         if($parentId){
@@ -74,18 +70,13 @@ class App_Service_Section
             $this->setLastError('Section not found');
             return false;
         }
-        $menu = App_Model_Menu::fetchOne(['id' => $section->menuId]);
-        if ( ! $menu && $menu->userId != (string)$user->id){
-            $this->setLastError('Menu invalid');
-            return false;
-        }
         if (!empty($title)){
             $section->title = $title;
         }
         if ($parentId !== false && App_Model_Section::fetchOne(['id' => $parentId])){
             $section->parentId = $parentId;
         }
-        $image = $this->imageService->loadImage($imageBlob);
+        $image = $this->_imageService->loadImage($imageBlob);
         if ($image)
         {
             $this->_imageService->deleteImageFromStorage($section->image['identity']);
@@ -99,14 +90,11 @@ class App_Service_Section
      * @param App_Model_User $user
      * @param App_Model_Menu $menu
      */
-    public function get(App_Model_User $user, App_Model_Menu $menu)
+    public function get(App_Model_User $user, $parentId)
     {
-        if ( (string)$user->id != (string)$menu->userId){
-            $this->setLastError('Permission denied');
-            return false;
-        }
         return App_Model_Section::fetchAll([
-            'menuId' => (string) $menu->id
+            'userId' => (string) $user->id,
+            'parentId' => $parentId
         ]);
     }
 
