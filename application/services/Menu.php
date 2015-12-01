@@ -211,8 +211,6 @@ class App_Service_Menu
     /**
      * @param App_Model_User $user
      * @param App_Model_Section $section
-     *
-     * @return array
      */
     public function deleteSection(App_Model_User $user, App_Model_Section $section)
     {
