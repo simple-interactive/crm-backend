@@ -214,16 +214,22 @@ class App_Service_Menu
      */
     public function deleteSection(App_Model_User $user, App_Model_Section $section)
     {
-        if (!$section || (string) $user->id != $section->userId) {
-            throw new Exception('Section not found');
+        if ((string) $user->id != $section->userId) {
+            throw new Exception('Permission denied');
         }
-        $ids = $this->_getIdsForDelete($section);
+        $ids = $this->_getTreeOfSection($section);
         App_Model_Section::remove([
             'id' => ['$in' => $ids]
         ]);
     }
 
-    private function _getIdsForDelete(App_Model_Section $section, array $ids = []){
+    /**
+     * @param App_Model_Section $section
+     * @param array $ids
+     * @return integer[]
+     */
+    private function _getTreeOfSection(App_Model_Section $section, array $ids = [])
+    {
         $parentId = (string)$section->id;
         $ids [] = $parentId;
 
