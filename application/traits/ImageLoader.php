@@ -1,24 +1,15 @@
 <?php
 
-class App_Service_Image
-{
-    /**
-     * @var string
-     */
-    private $_lastError;
+/**
+ * @trait App_Trait_ImageLoader
+ */
+trait App_Trait_ImageLoader {
 
-    /**
-     * @param string $imageBlob
-     *
-     * @return array|bool
-     */
     public function loadImage($imageBlob)
     {
         $data = explode(',', $imageBlob);
-
-        if (count($data) != 2){
+        if (count($data) != 2) {
             throw new Exception('image-is-invalid', 400);
-            return false;
         }
         $image = base64_decode($data[1]);
         $storage = new \Storage\Storage();
@@ -38,21 +29,5 @@ class App_Service_Image
     {
         $storage = new \Storage\Storage();
         return $storage->delete($identity);
-    }
-
-    /**
-     * @param string $lastError
-     */
-    public function setLastError($lastError)
-    {
-        $this->_lastError = $lastError;
-    }
-
-    /**
-     * @return string
-     */
-    public function getLastError()
-    {
-        return $this->_lastError;
     }
 } 
