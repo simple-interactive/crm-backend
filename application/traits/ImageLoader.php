@@ -5,6 +5,26 @@
  */
 trait App_Trait_ImageLoader {
 
+    /**
+     * @param array $imageBlobs
+     *
+     * @return array
+     */
+    public function loadImages(array $imageBlobs)
+    {
+        $data = [];
+        foreach ($imageBlobs as $image) {
+            $data [] = $this->loadImage($image);
+        }
+        return $data;
+    }
+
+    /**
+     * @param string $imageBlob
+     *
+     * @return array
+     * @throws Exception
+     */
     public function loadImage($imageBlob)
     {
         $data = explode(',', $imageBlob);

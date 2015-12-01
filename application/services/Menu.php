@@ -2,6 +2,7 @@
 
 class App_Service_Menu
 {
+    use App_Trait_ImageLoader;
     /**
      * @param App_Model_User $user
      * @param App_Model_Ingredient $ingredient
@@ -25,6 +26,12 @@ class App_Service_Menu
         }
         elseif ($ingredient->userId != (string) $user->id) {
             throw new Exception('permission-denied');
+        }
+        if (App_Model_Section::fetchOne([
+            'userId' => (string) $user->id,
+            'title' => $title
+        ])) {
+           throw new Exception('already-exists');
         }
         $ingredient->title = $title;
         $ingredient->save();
@@ -133,9 +140,9 @@ class App_Service_Menu
 
         // Uploading new image and deleting old image
         if (!empty($imageBlob)) {
-            $image = $this->_imageService->loadImage($imageBlob);
+            $image = $this->loadImage($imageBlob);
             if (!empty($section->image)) {
-                $this->_imageService->deleteImageFromStorage($section->image['identity']);
+                $this->deleteImageFromStorage($section->image['identity']);
             }
             $section->image = $image;
         }
@@ -182,9 +189,37 @@ class App_Service_Menu
         ]);
 
         foreach ($childSections as $child) {
-            $ids = $this->_getIdsForDelete($child, $ids);
+            $ids = $this->_getTreeOfSection($child, $ids);
         }
 
         return $ids;
     }
+
+    /**
+     * @param App_Model_User $user
+     * @param App_Model_Section $sectionId
+     * @param App_Model_Product $product
+     * @param string $title
+     * @param string $description
+     * @param float $price
+     * @param integer $weight
+     * @param array $images
+     * @param array $ingredietns
+     * @param bool $exists
+     */
+//    public function saveProduct(
+//        App_Model_User $user,
+//        App_Model_Section $sectionId = null,
+//        App_Model_Product $product = null,
+//        $title,
+//        $description,
+//        $price,
+//        $weight,
+//        $images,
+//        $ingredietns,
+//        $exists
+//    )
+//    {
+//
+//    }
 } 
