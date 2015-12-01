@@ -31,7 +31,7 @@ class ErrorController extends Zend_Controller_Action
             case Zend_Controller_Plugin_ErrorHandler::EXCEPTION_OTHER:
 
                 $this->getResponse()->setHttpResponseCode(500);
-                if (in_array($errors['exception']->getCode(), [403, 404, 500])) {
+                if (in_array($errors['exception']->getCode(), [400, 403, 404, 500])) {
                     $this->getResponse()->setHttpResponseCode($errors['exception']->getCode());
                 }
                 $this->view->message = $errors['exception']->getMessage();

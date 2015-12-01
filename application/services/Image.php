@@ -17,7 +17,7 @@ class App_Service_Image
         $data = explode(',', $imageBlob);
 
         if (count($data) != 2){
-            $this->setLastError('Image invalid');
+            throw new Exception('image-is-invalid', 400);
             return false;
         }
         $image = base64_decode($data[1]);
