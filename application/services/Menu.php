@@ -3,72 +3,30 @@
 class App_Service_Menu
 {
     /**
-     * @var string
-     */
-    private $_lastError;
-
-    /**
      * @param App_Model_User $user
-     * @param string $title
-     * @param integer $weight
-     * @param float $price
-     *
-     * @return App_Model_Ingredient|false
-     */
-    public function createIngredient(App_Model_User $user, $title, $weight, $price)
-    {
-        if (!$title || strlen($title) < 2 && strlen($title) > 20){
-            $this->setLastError('Title invalid');
-            return false;
-        }
-        if($weight <= 0){
-            $this->setLastError('Weight invalid');
-            return false;
-        }
-        if($price  <= 0){
-            $this->setLastError('Price invalid');
-            return false;
-        }
-        $ingredient = new App_Map_Ingredient([
-            'userId' => (string) $user->id,
-            'title' => $title,
-            'weight' => $weight,
-            'price' => $price
-        ]);
-        return $price;
-    }
-
-    /**
      * @param App_Model_Ingredient $ingredient
-     * @param string|false $title
-     * @param integer|false $weight
-     * @param float|false $price
+     * @param $title
      *
-     * @return App_Model_Ingredient|false
+     * @return App_Model_Ingredient
+     * @throws Exception
      */
-    public function editIngredient(App_Model_Ingredient $ingredient, $title = false, $weight = false, $price = false)
+    public function saveIngredient(
+        App_Model_User $user,
+        App_Model_Ingredient $ingredient = null,
+        $title
+    )
     {
-        if (!$ingredient){
-            $this->setLastError('Ingredient invalid');
-            return false;
+        if (empty($title) || mb_strlen($title, 'UTF-8') < 2 || mb_strlen($title, 'UTF-8') > 20) {
+            throw new Exception('ingredient-title-invalid');
         }
-        if ($title && strlen($title) < 2 && strlen($title) > 20){
-            $this->setLastError('Title invalid');
-            return false;
+        if (!$ingredient) {
+            $ingredient = new App_Model_Ingredient();
+            $ingredient->userId = (string) $user->id;
         }
-        if($weight && $weight <= 0){
-            $this->setLastError('Weight invalid');
-            return false;
+        elseif ($ingredient->userId != (string) $user->id) {
+            throw new Exception('permission-denied');
         }
-        if($price && $price  <= 0){
-            $this->setLastError('Price invalid');
-            return false;
-        }
-
-        ! $title && $ingredient->title = $title;
-        ! $weight && $ingredient->weight = $weight;
-        ! $price && $ingredient->price  = $price;
-
+        $ingredient->title = $title;
         $ingredient->save();
         return $ingredient;
     }
@@ -77,31 +35,14 @@ class App_Service_Menu
      * @var App_Model_User $user
      * @var App_Model_Product $product
      *
-     * @return App_Model_Ingredient[]|false
+     * @return App_Model_Ingredient[]
      */
-    public function getIngredients(App_Model_User $user, App_Model_Product $product)
+    public function getIngredients(App_Model_User $user)
     {
-       // if $prodect not found return false;
        return App_Model_Ingredient::fetchAll([
            'userId' => (string) $user->id
        ]);
     }
-    /**
-     * @param string $lastError
-     */
-    public function setLastError($lastError)
-    {
-        $this->_lastError = $lastError;
-    }
-
-    /**
-     * @return string
-     */
-    public function getLastError()
-    {
-        return $this->_lastError;
-    }
-
     /**
      * @param App_Model_User $user
      * @param string $sectionId
@@ -211,6 +152,8 @@ class App_Service_Menu
     /**
      * @param App_Model_User $user
      * @param App_Model_Section $section
+     *
+     * @throws Exception
      */
     public function deleteSection(App_Model_User $user, App_Model_Section $section)
     {
@@ -226,6 +169,7 @@ class App_Service_Menu
     /**
      * @param App_Model_Section $section
      * @param array $ids
+     *
      * @return integer[]
      */
     private function _getTreeOfSection(App_Model_Section $section, array $ids = [])
@@ -237,7 +181,7 @@ class App_Service_Menu
             'parentId' => $parentId
         ]);
 
-        foreach($childSections as $child){
+        foreach ($childSections as $child) {
             $ids = $this->_getIdsForDelete($child, $ids);
         }
 
