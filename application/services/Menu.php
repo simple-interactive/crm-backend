@@ -205,7 +205,11 @@ class App_Service_Menu
      * @param integer $weight
      * @param array $images
      * @param array $ingredietns
+     * @param array $options
      * @param bool $exists
+     *
+     * @throws Exception
+     * @return \App_Model_Product
      */
     public function saveProduct(
         App_Model_User $user,
@@ -216,7 +220,8 @@ class App_Service_Menu
         $price,
         $weight,
         $images,
-        $ingredietns,
+        array $ingredietns = null,
+        array $options = null,
         $exists
     )
     {
@@ -225,34 +230,62 @@ class App_Service_Menu
             $product->userId = (string) $user->id;
         }
         elseif ($product->userId != (string) $user->id) {
-            throw new Exception('permission-denied');
+            throw new Exception('permission-denied', 400);
         }
         if (!$title || mb_strlen($title, 'UTF-8') < 2 || mb_strlen($title, 'UTF-8') > 20) {
-            throw new Exception('product-title-invalid');
+            throw new Exception('product-title-invalid', 400);
         }
         if (!$description || mb_strlen($description, 'UTF-8') < 2 || mb_strlen($description, 'UTF-8') > 300) {
-            throw new Exception('product-description-invalid');
+            throw new Exception('product-description-invalid', 400);
         }
         if (gettype($price + 0.0) != 'double' || $price < 0) {
-            throw new Exception('product-price-float');
+            throw new Exception('product-price-float', 400);
         }
         if (gettype($weight + 0) != 'integer' || $weight <= 0) {
-            throw new Exception('product-weight-invalid');
-        }
-
-        if (!in_array($exists, ['true', 'false'])) {
-            throw new Exception('product-exists-invalid');
+            throw new Exception('product-weight-invalid', 400);
         }
         if ($section->userId  != (string) $user->id) {
-            throw new Exception('section-invalid');
+            throw new Exception('section-invalid', 400);
         }
         if (!$product->id && !$images || count($images) == 0){
-            throw new Exception('Images invalid');
+            throw new Exception('images-invalid', 400);
         }
         elseif ($images) {
             $oldImages = $product->images;
             $product->images = $this->loadImages($images);
             $this->deleteImagesFromStorage($oldImages);
+        }
+        if ($ingredietns && ! is_array($ingredietns)) {
+            throw new Exception('ingredient-invalid');
+        }
+        elseif ($ingredietns) {
+           foreach ($ingredietns as $item) {
+               if (!App_Model_Ingredient::fetchOne(['id' => $item['id']])) {
+                   throw new Exception('ingredient-not-found', 400);
+               }
+               if ($item['weight'] <= 0) {
+                   throw new Exception('ingredient-weight-invalid', 400);
+               }
+               if ($item['price'] < 0) {
+                  throw new Exception('ingredient-price-invalid', 400);
+               }
+           }
+        }
+        if ($options && ! is_array($options)) {
+            throw new Exception('option-invalid');
+        }
+        elseif ($options) {
+            foreach ($options as $item) {
+                if (mb_strlen($item['title'],  'UTF-8') < 2 || mb_strlen($item['title'],  'UTF-8') > 20) {
+                    throw new Exception('option-title-invalid', 400);
+                }
+                if ($item['weight'] <= 0) {
+                    throw new Exception('option-weight-invalid', 400);
+                }
+                if ($item['price'] < 0) {
+                    throw new Exception('option-price-invalid', 400);
+                }
+            }
         }
         $product->sectionId = (string) $section->id;
         $product->title = $title;
@@ -260,48 +293,95 @@ class App_Service_Menu
         $product->price = floatval($price);
         $product->weight = intval($weight);
         $product->sectionId = (string) $section->id;
-        $product->exists = $exists;
+        $product->exists = boolval($exists);
+        $ingredietns && $product->ingredients = $ingredietns;
+        $options && $product->options = $options;
         $product->save();
         return $product;
     }
 
     /**
      * @param App_Model_User $user
-     * @param App_Model_Section $section
      * @param integer $offset
      * @param integer $limit
+     * @param App_Model_Section $section
+     * @param string $query
      *
      * @throws Exception
      * @return App_Model_Product[]
      */
-    public function getProductList(App_Model_User $user, App_Model_Section $section = null, $offset, $limit)
+    public function getProductList(App_Model_User $user, App_Model_Section $section = null, $offset, $limit, $query = null)
     {
         $conditions = ['userId' => (string) $user->id];
         if ($section && $section->userId != (string) $user->id) {
-            throw new Exception('permission-denied');
+            throw new Exception('permission-denied', 400);
         }
         elseif ($section) {
             $conditions ['sectionId'] = (string) $section->id;
         }
+        if ($query) {
+            $conditions ['title'] = new MongoRegex("/$query/i");
+            $conditions ['description'] = new MongoRegex("/$query/i");
+        }
+
         return App_Model_Product::fetchAll($conditions, null, (int)$limit, (int)$offset);
     }
 
     /**
      * @param App_Model_User $user
      * @param App_Model_Section $section
+     * @param string $query
      *
      * @throws Exception
      * @return int
      */
-    public function getProductCount(App_Model_User $user, App_Model_Section $section = null)
+    public function getProductCount(App_Model_User $user, App_Model_Section $section = null, $query = null)
     {
         $conditions = ['userId' => (string) $user->id];
         if ($section && $section->userId != (string) $user->id) {
-            throw new Exception('permission-denied');
+            throw new Exception('permission-denied', 400);
         }
         elseif ($section) {
             $conditions ['sectionId'] = (string) $section->id;
         }
+        if ($query) {
+            $conditions ['title'] = new MongoRegex("/$query/");
+            $conditions ['description'] = new MongoRegex("/$query/");
+        }
+
         return App_Model_Product::getCount($conditions);
+    }
+
+    /**
+     * @param App_Model_User $user
+     * @param string $productId
+     *
+     * @return App_Model_Product|null
+     * @throws Exception
+     */
+    public function getProduct(App_Model_User $user, $productId)
+    {
+        $product = App_Model_Product::fetchOne(['id' => $productId]);
+        if (!$product) {
+            throw new Exception('not-found', 400);
+        }
+        if ( (string)$product->userId != (string)$user->id) {
+            throw new Exception('permission-denied', 400);
+        }
+        return $product;
+    }
+
+    /**
+     * @param App_Model_User $user
+     * @param App_Model_Product $product
+     *
+     * @throws Exception
+     */
+    public function deleteProduct(App_Model_User $user, App_Model_Product $product)
+    {
+        if ($product->userId != (string) $user->id) {
+           throw new Exception('permission-denied', 400);
+        }
+        $product->delete();
     }
 } 

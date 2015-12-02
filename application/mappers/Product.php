@@ -16,6 +16,7 @@ class App_Map_Product extends Mongostar_Map_Instance
             'weight' => 'weight',
             'images' => 'images',
             'ingredients' => 'ingredients',
+            'options' => 'options',
             'exists' => 'exists'
         ];
     }

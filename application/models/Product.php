@@ -12,6 +12,7 @@
  * @property integer $weight
  * @property array   $images
  * @property array   $ingredients
+ * @property array   $options
  * @property bool    $exists
  *
  * @method static App_Model_Product[] fetchAll(array $cond = null, array $sort = null, $count = null, $offset = null, $hint = NULL)
