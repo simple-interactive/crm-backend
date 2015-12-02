@@ -40,6 +40,13 @@ trait App_Trait_ImageLoader {
         return $files[0]->asArray();
     }
 
+    public function deleteImagesFromStorage(array $identities)
+    {
+        foreach ($identities as $identity) {
+            $this->deleteImageFromStorage($identity);
+        }
+    }
+
     /**
      * @param string $identity
      *

@@ -197,7 +197,7 @@ class App_Service_Menu
 
     /**
      * @param App_Model_User $user
-     * @param App_Model_Section $sectionId
+     * @param App_Model_Section $section
      * @param App_Model_Product $product
      * @param string $title
      * @param string $description
@@ -207,19 +207,82 @@ class App_Service_Menu
      * @param array $ingredietns
      * @param bool $exists
      */
-//    public function saveProduct(
-//        App_Model_User $user,
-//        App_Model_Section $sectionId = null,
-//        App_Model_Product $product = null,
-//        $title,
-//        $description,
-//        $price,
-//        $weight,
-//        $images,
-//        $ingredietns,
-//        $exists
-//    )
-//    {
-//
-//    }
+    public function saveProduct(
+        App_Model_User $user,
+        App_Model_Section $section,
+        App_Model_Product $product = null,
+        $title,
+        $description,
+        $price,
+        $weight,
+        $images,
+        $ingredietns,
+        $exists
+    )
+    {
+        if (!$product) {
+            $product = new App_Model_Product();
+            $product->userId = (string) $user->id;
+        }
+        elseif ($product->userId != (string) $user->id) {
+            throw new Exception('permission-denied');
+        }
+        if (!$title || mb_strlen($title, 'UTF-8') < 2 || mb_strlen($title, 'UTF-8') > 20) {
+            throw new Exception('product-title-invalid');
+        }
+        if (!$description || mb_strlen($description, 'UTF-8') < 2 || mb_strlen($description, 'UTF-8') > 300) {
+            throw new Exception('product-description-invalid');
+        }
+        if (gettype($price + 0.0) != 'double' || $price < 0) {
+            throw new Exception('product-price-float');
+        }
+        if (gettype($weight + 0) != 'integer' || $weight <= 0) {
+            throw new Exception('product-weight-invalid');
+        }
+
+        if (!in_array($exists, ['true', 'false'])) {
+            throw new Exception('product-exists-invalid');
+        }
+        if ($section->userId  != (string) $user->id) {
+            throw new Exception('section-invalid');
+        }
+        if (!$product->id && !$images || count($images) == 0){
+            throw new Exception('Images invalid');
+        }
+        elseif ($images) {
+            $oldImages = $product->images;
+            $product->images = $this->loadImages($images);
+            $this->deleteImagesFromStorage($oldImages);
+        }
+        $product->sectionId = (string) $section->id;
+        $product->title = $title;
+        $product->description = $description;
+        $product->price = floatval($price);
+        $product->weight = intval($weight);
+        $product->sectionId = (string) $section->id;
+        $product->exists = $exists;
+        $product->save();
+        return $product;
+    }
+
+    /**
+     * @param App_Model_User $user
+     * @param integer $offset
+     * @param integer $limit
+     *
+     * @return App_Model_Product[]
+     */
+    public function getProductList(App_Model_User $user, $offset, $limit)
+    {
+        return App_Model_Product::fetchAll([
+            'userId' => (string) $user->id
+        ], null, (int)$limit, (int)$offset);
+    }
+
+    public function getProductCount(App_Model_User $user)
+    {
+        return App_Model_Product::getCount([
+            'userId' => (string) $user->id
+        ]);
+    }
 } 
