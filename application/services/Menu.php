@@ -267,22 +267,41 @@ class App_Service_Menu
 
     /**
      * @param App_Model_User $user
+     * @param App_Model_Section $section
      * @param integer $offset
      * @param integer $limit
      *
+     * @throws Exception
      * @return App_Model_Product[]
      */
-    public function getProductList(App_Model_User $user, $offset, $limit)
+    public function getProductList(App_Model_User $user, App_Model_Section $section = null, $offset, $limit)
     {
-        return App_Model_Product::fetchAll([
-            'userId' => (string) $user->id
-        ], null, (int)$limit, (int)$offset);
+        $conditions = ['userId' => (string) $user->id];
+        if ($section && $section->userId != (string) $user->id) {
+            throw new Exception('permission-denied');
+        }
+        elseif ($section) {
+            $conditions ['sectionId'] = (string) $section->id;
+        }
+        return App_Model_Product::fetchAll($conditions, null, (int)$limit, (int)$offset);
     }
 
-    public function getProductCount(App_Model_User $user)
+    /**
+     * @param App_Model_User $user
+     * @param App_Model_Section $section
+     *
+     * @throws Exception
+     * @return int
+     */
+    public function getProductCount(App_Model_User $user, App_Model_Section $section = null)
     {
-        return App_Model_Product::getCount([
-            'userId' => (string) $user->id
-        ]);
+        $conditions = ['userId' => (string) $user->id];
+        if ($section && $section->userId != (string) $user->id) {
+            throw new Exception('permission-denied');
+        }
+        elseif ($section) {
+            $conditions ['sectionId'] = (string) $section->id;
+        }
+        return App_Model_Product::getCount($conditions);
     }
 } 

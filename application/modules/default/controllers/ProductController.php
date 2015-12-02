@@ -29,11 +29,15 @@ class ProductController extends App_Controller_Base {
 
     public function listAction()
     {
-        $this->view->products = App_Map_Product::execute($this->getMenuService()->getProductList($this->user, $this->getParam('offset', 0), $this->getParam('limit', 10)));
-    }
-
-    public function listcountAction()
-    {
-        $this->view->count = $this->getMenuService()->getProductCount($this->user);
+        $this->view->products = App_Map_Product::execute($this->getMenuService()->getProductList(
+            $this->user,
+            App_Model_Section::fetchOne(['id' => $this->getParam('sectionId', false)]),
+            $this->getParam('offset', 0),
+            $this->getParam('limit', 10))
+        );
+        $this->view->count = $this->getMenuService()->getProductCount(
+            $this->user,
+            App_Model_Section::fetchOne(['id' => $this->getParam('sectionId', false)])
+        );
     }
 } 
