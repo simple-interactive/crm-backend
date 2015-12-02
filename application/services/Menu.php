@@ -171,6 +171,13 @@ class App_Service_Menu
         App_Model_Section::remove([
             'id' => ['$in' => $ids]
         ]);
+        $products = App_Model_Product::fetchAll([
+            'sectionId' => ['$in' => $ids]
+        ]);
+        foreach ($products as $item) {
+            $item->sectionId = null;
+            $item->save();
+        }
     }
 
     /**
