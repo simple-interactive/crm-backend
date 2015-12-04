@@ -18,20 +18,21 @@ class App_Service_Menu
     )
     {
         if (empty($title) || mb_strlen($title, 'UTF-8') < 2 || mb_strlen($title, 'UTF-8') > 20) {
-            throw new Exception('ingredient-title-invalid');
+            throw new Exception('ingredient-title-invalid', 400);
         }
         if (!$ingredient) {
             $ingredient = new App_Model_Ingredient();
             $ingredient->userId = (string) $user->id;
         }
         elseif ($ingredient->userId != (string) $user->id) {
-            throw new Exception('permission-denied');
+            throw new Exception('permission-denied', 400);
         }
-        if (App_Model_Section::fetchOne([
+
+        if (App_Model_Ingredient::fetchOne([
             'userId' => (string) $user->id,
-            'title' => $title
+            'title' => trim($title)
         ])) {
-           throw new Exception('already-exists');
+           throw new Exception('already-exists', 400);
         }
         $ingredient->title = $title;
         $ingredient->save();
