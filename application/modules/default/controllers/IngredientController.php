@@ -9,7 +9,10 @@ class IngredientController extends App_Controller_Base
     public function indexAction()
     {
         $this->view->ingredients = App_Map_Ingredient::execute(
-            $this->getMenuService()->getIngredients($this->user)
+            $this->getMenuService()->getIngredients(
+                $this->user,
+                $this->getParam('search', false)
+            )
         );
     }
 

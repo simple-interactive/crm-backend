@@ -40,14 +40,18 @@ class App_Service_Menu
 
     /**
      * @var App_Model_User $user
-     * @var App_Model_Product $product
+     * @var string $search
      *
      * @return App_Model_Ingredient[]
      */
-    public function getIngredients(App_Model_User $user)
+    public function getIngredients(App_Model_User $user, $search)
     {
+        if ($search == false || mb_strlen($search, 'UTF-8') == 0) {
+            throw new Exception('Search invalid', 400);
+        }
        return App_Model_Ingredient::fetchAll([
-           'userId' => (string) $user->id
+           'userId' => (string) $user->id,
+           'title' => new MongoRegex("/$search/i")
        ]);
     }
     /**
@@ -165,7 +169,7 @@ class App_Service_Menu
     public function deleteSection(App_Model_User $user, App_Model_Section $section)
     {
         if ((string) $user->id != $section->userId) {
-            throw new Exception('Permission denied');
+            throw new Exception('Permission denied', 400);
         }
         $ids = $this->_getTreeOfSection($section);
         App_Model_Section::remove([
