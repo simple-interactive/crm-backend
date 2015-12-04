@@ -42,6 +42,7 @@ class App_Service_Menu
      * @var App_Model_User $user
      * @var string $search
      *
+     * @throws Exception
      * @return App_Model_Ingredient[]
      */
     public function getIngredients(App_Model_User $user, $search)
@@ -52,7 +53,7 @@ class App_Service_Menu
        return App_Model_Ingredient::fetchAll([
            'userId' => (string) $user->id,
            'title' => new MongoRegex("/$search/i")
-       ]);
+       ], null, 10);
     }
     /**
      * @param App_Model_User $user
