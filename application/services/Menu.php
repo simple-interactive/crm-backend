@@ -420,6 +420,9 @@ class App_Service_Menu
         if ($product->userId != (string) $user->id) {
            throw new Exception('permission-denied', 400);
         }
+        foreach ($product->images as $image) {
+            $this->deleteImageFromStorage($image['identity']);
+        }
         $product->delete();
     }
 
