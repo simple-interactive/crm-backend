@@ -9,7 +9,7 @@ class App_Map_Product extends Mongostar_Map_Instance
     {
         return [
             'id' => 'id',
-            'sectionId' => 'sectionId',
+            'sectionId' => 'section',
             'title' => 'title',
             'description' => 'description',
             'price' => 'price',
@@ -38,5 +38,10 @@ class App_Map_Product extends Mongostar_Map_Instance
         }
 
         return $ingredients;
+    }
+
+    public function getSectionId(App_Model_Product $product)
+    {
+        return App_Model_Section::fetchOne(['id' => $product->sectionId])->title;
     }
 } 

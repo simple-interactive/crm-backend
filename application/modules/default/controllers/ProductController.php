@@ -18,7 +18,8 @@ class ProductController extends App_Controller_Base {
             $this->view->product = App_Map_Product::execute(
                 $this->getMenuService()->saveProduct(
                     $this->user,
-                    App_Model_Section::fetchOne(['id' => $this->getParam('sectionId', false)]),
+                    App_Model_Section::fetchOne(['id' => $this->getParam('section', false) ?
+                            @$this->getParam('section', false)['id'] : false ]),
                     App_Model_Product::fetchOne(['id' => $this->getParam('id', false)]),
                     $this->getParam('title', false),
                     $this->getParam('description', false),
