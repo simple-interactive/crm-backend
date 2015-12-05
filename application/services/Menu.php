@@ -296,14 +296,17 @@ class App_Service_Menu
             throw new Exception('ingredient-invalid');
         }
         elseif ($ingredients) {
-           foreach ($ingredients as $item) {
-               if (!App_Model_Ingredient::fetchOne(['id' => $item['id']])) {
+           for($i = 0; $i < count($ingredients); $i++) {
+               $id = $ingredients[$i]['ingredient']['id'];
+               unset( $ingredients[$i]['ingredient']);
+               $ingredients[$i]['id'] = $id;
+               if (!App_Model_Ingredient::fetchOne(['id' => $ingredients[$i]['id']])) {
                    throw new Exception('ingredient-not-found', 400);
                }
-               if ($item['weight'] <= 0) {
+               if ($ingredients[$i]['weight'] <= 0) {
                    throw new Exception('ingredient-weight-invalid', 400);
                }
-               if ($item['price'] < 0) {
+               if ($ingredients[$i]['price'] < 0) {
                   throw new Exception('ingredient-price-invalid', 400);
                }
            }
