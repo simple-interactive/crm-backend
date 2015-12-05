@@ -67,7 +67,9 @@ class ProductController extends App_Controller_Base {
                 $this->user,
                 App_Model_Section::fetchOne(['id' => $this->getParam('sectionId',  false)]),
                 $this->getParam('offset', 0),
-                $this->getParam('limit', 10))
+                $this->getParam('limit', 10),
+                $this->getParam('search', false)
+            )
         );
         $this->view->count = $this->getMenuService()->getProductCount(
             $this->user,
