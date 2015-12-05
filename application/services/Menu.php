@@ -355,9 +355,6 @@ class App_Service_Menu
      */
     public function getProductList(App_Model_User $user, App_Model_Section $section = null, $offset, $limit, $search = null)
     {
-        if ( ! $section && ! $search){
-            throw new Exception('param-invalid');
-        }
         $conditions = ['userId' => (string) $user->id];
         if ($section && $section->userId != (string) $user->id) {
             throw new Exception('permission-denied', 400);
