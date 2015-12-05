@@ -233,7 +233,7 @@ class App_Service_Menu
         $price,
         $weight,
         $images,
-        array $ingredietns = null,
+        array $ingredients = null,
         array $options = null,
         $exists
     )
@@ -260,19 +260,44 @@ class App_Service_Menu
         if ($section->userId  != (string) $user->id) {
             throw new Exception('section-invalid', 400);
         }
-        if (!$product->id && !$images || count($images) == 0){
+        if (!$images || count($images) == 0){
             throw new Exception('images-invalid', 400);
         }
-        elseif ($images) {
-            $oldImages = $product->images;
-            $product->images = $this->loadImages($images);
-            $this->deleteImagesFromStorage($oldImages);
+        else {
+
+            $imageToSave = [];
+            $allImages = $product->images;
+            foreach ($allImages as $image) {
+                $exists = false;
+                foreach($images as $newImage) {
+                    if (empty($newImage['identity'])) {
+                       continue;
+                    }
+                    else if ($newImage['identity'] == $image['identity']) {
+                        $exists = true;
+                        break;
+                    }
+                }
+                if (!$exists) {
+                    $this->deleteImageFromStorage($image['identity']);
+                }
+                else {
+                    $imageToSave [] = $image;
+                }
+            }
+            foreach ($images as $newImage) {
+                if (isset($newImage['needToUpload'])) {
+                    $imageToSave[] = $this->loadImage($newImage['image']);
+                }
+            }
+
+            $product->images = $imageToSave;
         }
-        if ($ingredietns && ! is_array($ingredietns)) {
+        if ($ingredients && ! is_array($ingredients)) {
             throw new Exception('ingredient-invalid');
         }
-        elseif ($ingredietns) {
-           foreach ($ingredietns as $item) {
+        elseif ($ingredients) {
+           foreach ($ingredients as $item) {
                if (!App_Model_Ingredient::fetchOne(['id' => $item['id']])) {
                    throw new Exception('ingredient-not-found', 400);
                }
@@ -307,7 +332,7 @@ class App_Service_Menu
         $product->weight = intval($weight);
         $product->sectionId = (string) $section->id;
         $product->exists = boolval($exists);
-        $ingredietns && $product->ingredients = $ingredietns;
+        $ingredients && $product->ingredients = $ingredients;
         $options && $product->options = $options;
         $product->save();
         return $product;
