@@ -37,7 +37,9 @@ class ProductController extends App_Controller_Base {
 
     public function deleteAction()
     {
-        $this->getMenuService()->deleteProduct($this->user, App_Model_Product::fetchOne(['id' => $this->getParam('id', false)]));
+        $this->getMenuService()->deleteProduct(
+            $this->user,
+            App_Model_Product::fetchOne(['id' => $this->getParam('id', false)]));
     }
 
     public function listAction()
