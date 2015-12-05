@@ -85,12 +85,12 @@ class ProductController extends App_Controller_Base {
                 null,
                 $this->getParam('offset', 0),
                 $this->getParam('limit', 10),
-                $this->getParam('query', false)
+                $this->getParam('search', false)
         ));
         $this->view->count = $this->getMenuService()->getProductCount(
             $this->user,
             null,
-            $this->getParam('query', false)
+            $this->getParam('search', false)
         );
     }
 } 

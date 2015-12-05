@@ -2,7 +2,7 @@
 
 class App_Service_Menu
 {
-    use App_Trait_ImageLoader;
+    use App_Trait_ImageLoader, App_Trait_SearchProduct;
     /**
      * @param App_Model_User $user
      * @param App_Model_Ingredient $ingredient
@@ -264,7 +264,6 @@ class App_Service_Menu
             throw new Exception('images-invalid', 400);
         }
         else {
-
             $imageToSave = [];
             $allImages = $product->images;
             foreach ($allImages as $image) {
@@ -335,6 +334,9 @@ class App_Service_Menu
         $ingredients && $product->ingredients = $ingredients;
         $options && $product->options = $options;
         $product->save();
+
+        $this->toSearchModel($product);
+
         return $product;
     }
 
@@ -343,12 +345,12 @@ class App_Service_Menu
      * @param integer $offset
      * @param integer $limit
      * @param App_Model_Section $section
-     * @param string $query
+     * @param string $search
      *
      * @throws Exception
      * @return App_Model_Product[]
      */
-    public function getProductList(App_Model_User $user, App_Model_Section $section = null, $offset, $limit, $query = null)
+    public function getProductList(App_Model_User $user, App_Model_Section $section = null, $offset, $limit, $search = null)
     {
         $conditions = ['userId' => (string) $user->id];
         if ($section && $section->userId != (string) $user->id) {
@@ -357,9 +359,15 @@ class App_Service_Menu
         elseif ($section) {
             $conditions ['sectionId'] = (string) $section->id;
         }
-        if ($query) {
-            $conditions ['title'] = new MongoRegex("/$query/i");
-            $conditions ['description'] = new MongoRegex("/$query/i");
+        if ($search) {
+            $models = App_Model_Search::fetchAll([
+                'data' => new MongoRegex("/$search/i")
+            ]);
+            $ids = [];
+            foreach ($models as $item) {
+                $ids [] = $item->productId;
+            }
+            $conditions ['id'] = ['$in' => $ids];
         }
 
         return App_Model_Product::fetchAll($conditions, null, (int)$limit, (int)$offset);
@@ -368,12 +376,12 @@ class App_Service_Menu
     /**
      * @param App_Model_User $user
      * @param App_Model_Section $section
-     * @param string $query
+     * @param string $search
      *
      * @throws Exception
      * @return int
      */
-    public function getProductCount(App_Model_User $user, App_Model_Section $section = null, $query = null)
+    public function getProductCount(App_Model_User $user, App_Model_Section $section = null, $search = null)
     {
         $conditions = ['userId' => (string) $user->id];
         if ($section && $section->userId != (string) $user->id) {
@@ -382,9 +390,15 @@ class App_Service_Menu
         elseif ($section) {
             $conditions ['sectionId'] = (string) $section->id;
         }
-        if ($query) {
-            $conditions ['title'] = new MongoRegex("/$query/");
-            $conditions ['description'] = new MongoRegex("/$query/");
+        if ($search) {
+            $models = App_Model_Search::fetchAll([
+                'data' => new MongoRegex("/$search/i")
+            ]);
+            $ids = [];
+            foreach ($models as $item) {
+                $ids [] = $item->productId;
+            }
+            $conditions ['id'] = ['$in' => $ids];
         }
 
         return App_Model_Product::getCount($conditions);
