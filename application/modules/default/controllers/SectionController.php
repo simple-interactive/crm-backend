@@ -60,4 +60,8 @@ class SectionController extends App_Controller_Base
             ])
         );
     }
+
+    public function treeAction(){
+        $this->view->sections = $this->getMenuService()->treeSections($this->user);
+    }
 } 

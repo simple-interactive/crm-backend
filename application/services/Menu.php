@@ -397,4 +397,63 @@ class App_Service_Menu
         }
         $product->delete();
     }
+
+    /**
+     * @param App_Model_User $user
+     *
+     * @return array
+     */
+    public function treeSections(App_Model_User $user)
+    {
+        $models = App_Model_Section::fetchAll([
+            'userId' => (string) $user->id
+        ]);
+        $modelsArray = [];
+        $res = [];
+        foreach ($models as $model) {
+            $res [(string) $model->id] = [];
+            $modelsArray [(string)$model->id] = $model;
+        }
+        foreach($models as $model) {
+            $res[$model->parentId][] = $model;
+        }
+        $toPrint = [
+            "sections" => []
+        ];
+
+        foreach($models as $model){
+            if ( count($res[(string)$model->id]) == 0){
+                if(empty($model->parentId)){
+                    $toPrint ['sections'] [(string)$model->id] = [
+                        'id' => (string) $model->id,
+                        'title' => $model->title
+                    ];
+                    continue;
+                }
+                if(empty( $toPrint ['sections'] [$model->parentId]))
+                    $toPrint ['sections'] [$model->parentId] = [
+                        'id' => (string) $modelsArray [$model->parentId]->id,
+                        'title' => $modelsArray [$model->parentId]->title,
+                        'sub-sections' =>  [[
+                            'id' => (string) $model->id,
+                            'title' => $model->title
+                        ]]
+                    ];
+                else {
+                    $toPrint ['sections'] [$model->parentId] ['sub-sections'] [] = [
+                        'id' => (string) $model->id,
+                        'title' => $model->title
+                    ];
+                }
+            }
+        }
+
+        $i = 0;
+        foreach(array_keys($toPrint['sections']) as $item){
+            $toPrint ['sections'] [$i++] = $toPrint['sections'] [$item];
+            unset($toPrint['sections'] [$item]);
+        }
+
+        return $toPrint['sections'];
+    }
 } 
