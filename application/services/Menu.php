@@ -345,66 +345,118 @@ class App_Service_Menu
 
     /**
      * @param App_Model_User $user
-     * @param integer $offset
-     * @param integer $limit
-     * @param App_Model_Section $section
-     * @param string $search
+     * @param int $offset
+     * @param int $count
      *
-     * @throws Exception
      * @return App_Model_Product[]
      */
-    public function getProductList(App_Model_User $user, App_Model_Section $section = null, $offset, $limit, $search = null)
+    public function getProductList(App_Model_User $user, $offset = 0, $count = 10)
     {
-        $conditions = ['userId' => (string) $user->id];
-        if ($section && $section->userId != (string) $user->id) {
+        return App_Model_Product::fetchAll([
+            'userId' => (string) $user->id
+        ], null, (int)$count, (int)$offset);
+    }
+
+    public function getProductCount(App_Model_User $user)
+    {
+        return App_Model_Product::getCount([
+            'userId' => (string) $user->id
+        ]);
+    }
+    /**
+     * @param App_Model_User $user
+     * @param App_Model_Section $section
+     * @param int $offset
+     * @param int $count
+     *
+     * @return App_Model_Product[]
+     * @throws Exception
+     */
+    public function getProductListBySection(
+        App_Model_User $user,
+        App_Model_Section
+        $section,
+        $offset = 0,
+        $count = 10
+    )
+    {
+        if ($section->userId != (string) $user->id) {
             throw new Exception('permission-denied', 400);
         }
-        elseif ($section) {
-            $conditions ['sectionId'] = (string) $section->id;
-        }
-        if ($search) {
-            $models = App_Model_Search::fetchAll([
-                'data' => new MongoRegex("/$search/i")
-            ]);
-            $ids = [];
-            foreach ($models as $item) {
-                $ids [] = $item->productId;
-            }
-            $conditions ['id'] = ['$in' => $ids];
-        }
+        return App_Model_Product::fetchAll([
+            'userId' => (string) $user->id,
+            'sectionId' => (string) $section->id
+        ], null, (int)$count, (int)$offset);
+    }
 
-        return App_Model_Product::fetchAll($conditions, null, (int)$limit, (int)$offset);
+    /**
+     * @param App_Model_User $user
+     * @param string $search
+     * @param int $offset
+     * @param int $count
+     *
+     * @return App_Model_Product[]
+     * @throws Exception
+     */
+    public function getProductListBySearch(App_Model_User $user, $search, $offset = 0, $count = 10)
+    {
+        if (!$search) {
+            throw new Exception('search-invalid', 400);
+        }
+        $models = App_Model_Search::fetchAll([
+            'data' => new MongoRegex("/$search/i")
+        ]);
+        $ids = [];
+        foreach ($models as $item) {
+                $ids [] = $item->productId;
+        }
+        return App_Model_Product::fetchAll([
+            'userId' => (string) $user->id,
+            'id' => ['$in' => $ids]
+        ], null, (int)$count, (int)$offset);
     }
 
     /**
      * @param App_Model_User $user
      * @param App_Model_Section $section
-     * @param string $search
      *
-     * @throws Exception
      * @return int
+     * @throws Exception
      */
-    public function getProductCount(App_Model_User $user, App_Model_Section $section = null, $search = null)
+    public function getProductCountBySection(App_Model_User $user, App_Model_Section $section)
     {
-        $conditions = ['userId' => (string) $user->id];
-        if ($section && $section->userId != (string) $user->id) {
+        if ($section->userId != (string) $user->id) {
             throw new Exception('permission-denied', 400);
         }
-        elseif ($section) {
-            $conditions ['sectionId'] = (string) $section->id;
-        }
-        if ($search) {
-            $models = App_Model_Search::fetchAll([
-                'data' => new MongoRegex("/$search/i")
-            ]);
-            $ids = [];
-            foreach ($models as $item) {
-                $ids [] = $item->productId;
-            }
-            $conditions ['id'] = ['$in' => $ids];
-        }
+        return App_Model_Product::getCount([
+            'userId' => (string) $user->id,
+            'sectionId' => (string) $section->id
+        ]);
+    }
 
-        return App_Model_Product::getCount($conditions);
+    /**
+     * @param App_Model_User $user
+     * @param $search
+     *
+     * @return int
+     * @throws Exception
+     */
+    public function getProductCountBySearch(App_Model_User $user, $search)
+    {
+        if (!$search) {
+            throw new Exception('search-invalid', 400);
+        }
+        $models = App_Model_Search::fetchAll([
+            'data' => new MongoRegex("/$search/i")
+        ]);
+        $ids = [];
+        foreach ($models as $item) {
+            $ids [] = $item->productId;
+        }
+        return App_Model_Product::getCount([
+            'userId' => (string) $user->id,
+            'id' => ['$in' => $ids]
+        ]);
     }
 
     /**

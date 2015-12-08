@@ -18,8 +18,7 @@ class ProductController extends App_Controller_Base {
             $this->view->product = App_Map_Product::execute(
                 $this->getMenuService()->saveProduct(
                     $this->user,
-                    App_Model_Section::fetchOne(['id' => $this->getParam('section', false) ?
-                            @$this->getParam('section', false)['id'] : false ]),
+                    App_Model_Section::fetchOne($this->getParam('section', false)['id']),
                     App_Model_Product::fetchOne(['id' => $this->getParam('id', false)]),
                     $this->getParam('title', false),
                     $this->getParam('description', false),
@@ -50,7 +49,6 @@ class ProductController extends App_Controller_Base {
         }
         $this->view->products = App_Map_Product::execute($this->getMenuService()->getProductList(
             $this->user,
-            null,
             $this->getParam('offset', 0),
             $this->getParam('limit', 10))
         );
@@ -64,15 +62,14 @@ class ProductController extends App_Controller_Base {
         if (!$this->getRequest()->isGet()) {
             throw new Exception('unsupported-method', 400);
         }
-        $this->view->products = App_Map_Product::execute($this->getMenuService()->getProductList(
+        $this->view->products = App_Map_Product::execute($this->getMenuService()->getProductListBySection(
                 $this->user,
                 App_Model_Section::fetchOne(['id' => $this->getParam('sectionId',  false)]),
                 $this->getParam('offset', 0),
-                $this->getParam('limit', 10),
-                $this->getParam('search', false)
+                $this->getParam('limit', 10)
             )
         );
-        $this->view->count = $this->getMenuService()->getProductCount(
+        $this->view->count = $this->getMenuService()->getProductCountBySection(
             $this->user,
             App_Model_Section::fetchOne(['id' => $this->getParam('sectionId',  false)])
         );
@@ -83,16 +80,14 @@ class ProductController extends App_Controller_Base {
         if (!$this->getRequest()->isGet()) {
             throw new Exception('unsupported-method', 400);
         }
-        $this->view->products = App_Map_Product::execute($this->getMenuService()->getProductList(
+        $this->view->products = App_Map_Product::execute($this->getMenuService()->getProductListBySearch(
                 $this->user,
-                null,
+                $this->getParam('search', false),
                 $this->getParam('offset', 0),
-                $this->getParam('limit', 10),
-                $this->getParam('search', false)
+                $this->getParam('limit', 10)
         ));
-        $this->view->count = $this->getMenuService()->getProductCount(
+        $this->view->count = $this->getMenuService()->getProductCountBySearch(
             $this->user,
-            null,
             $this->getParam('search', false)
         );
     }
