@@ -9,7 +9,7 @@ class App_Map_Product extends Mongostar_Map_Instance
     {
         return [
             'id' => 'id',
-            'sectionId' => 'section',
+            'sectionIdWithTitle' => 'section',
             'title' => 'title',
             'description' => 'description',
             'price' => 'price',
@@ -17,6 +17,20 @@ class App_Map_Product extends Mongostar_Map_Instance
             'images' => 'images',
             'ingredients' => 'ingredients',
             'options' => 'options',
+            'exists' => 'exists'
+        ];
+    }
+
+    public static function rulesMD()
+    {
+        return [
+            'id' => 'id',
+            'sectionId' => 'sectionId',
+            'title' => 'title',
+            'description' => 'description',
+            'price' => 'price',
+            'weight' => 'weight',
+            'images' => 'images',
             'exists' => 'exists'
         ];
     }
@@ -40,13 +54,17 @@ class App_Map_Product extends Mongostar_Map_Instance
         return $ingredients;
     }
 
-    public function getSectionId(App_Model_Product $product)
+    /**
+     * @param App_Model_Product $product
+     * s
+     * @return array
+     */
+    public function getSectionIdWithTitle(App_Model_Product $product)
     {
         $section = App_Model_Section::fetchOne(['id' => $product->sectionId]);
         return [
             'title' => $section->title,
             'id' => (string)$section->id
-
         ];
     }
 } 

@@ -214,14 +214,16 @@ class App_Service_Menu
      * @param App_Model_Product $product
      * @param string $title
      * @param string $description
-     * @param float $price
+     * @param $price
      * @param integer $weight
      * @param array $images
-     * @param array $ingredietns
+     * @param array $ingredients
      * @param array $options
      * @param bool $exists
      *
      * @throws Exception
+     * @internal param $float $ price
+     * @internal param array $ingredietns
      * @return \App_Model_Product
      */
     public function saveProduct(
@@ -552,5 +554,103 @@ class App_Service_Menu
         }
 
         return $toPrint['sections'];
+    }
+
+    /**
+     * @param App_Model_User $user
+     *
+     * @return App_Model_Product[]
+     */
+    public function getAllProduct(App_Model_User $user)
+    {
+        return App_Model_Product::fetchAll([
+            'userId' => (string) $user->id
+        ]);
+    }
+
+    /**
+     * @param App_Model_User $user
+     *
+     * @return App_Model_Section[]
+     */
+    public function getAllSection(App_Model_User $user)
+    {
+        return App_Model_Section::fetchAll([
+            'userId' => (string) $user->id
+        ]);
+    }
+
+    /**
+     * @param App_Model_User $user
+     * @param array $colors
+     * @param array $backgroundImage
+     * @param array $company
+     *
+     * @return App_Model_Style
+     * @throws Exception
+     */
+    public function saveStyle(App_Model_User $user, array $colors, array $backgroundImage, array $company)
+    {
+        $style = App_Model_Style::fetchOne([
+            'userId' => (string) $user->id
+        ]);
+
+        if (!$style) {
+            $style = new App_Model_Style();
+            $style->userId = (string) $user->id;
+        }
+
+        if (empty($colors['main'])) {
+            throw new \Exception('main-invalid');
+        }
+        if (empty($colors['foreground'])) {
+            throw new \Exception('foreground-invalid');
+        }
+        if (empty($colors['background'])) {
+            throw new \Exception('background-invalid');
+        }
+
+        $style->colors = [
+            'main' => $colors ['main'],
+            'foreground' => $colors ['foreground'],
+            'background' => $colors ['background']
+        ];
+
+        if (empty($company['slogan'])) {
+            throw new \Exception('slogan-invalid');
+        }
+        if (empty($company['logo'])) {
+            throw new \Exception('logo-invalid');
+        }
+
+        if (!empty($company ['logo']['needToUpload'])) {
+            $company ['logo'] = $this->loadImage($company['logo']['image']);
+
+            if (!empty($style->company['logo'])) {
+                $this->deleteImageFromStorage($style->company['logo']['identity']);
+            }
+        }
+
+        $style->company = [
+            'slogan' => $company['slogan'],
+            'logo' => $company['logo']
+        ];
+
+        if (!empty($backgroundImage['needToUpload'])) {
+            $style->backgroundImage = $this->loadImage($backgroundImage['image']);
+            if (!empty($style->company['backgroundImage'])) {
+                $this->deleteImageFromStorage($style->company['backgroundImage']['identity']);
+            }
+        }
+
+        $style->save();
+        return $style;
+    }
+
+    public function getStyle(App_Model_User $user)
+    {
+        return App_Model_Style::fetchOne([
+            'userId' => (string) $user->id
+        ]);
     }
 } 

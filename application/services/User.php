@@ -81,7 +81,28 @@ class App_Service_User
                 return $user;
             }
         }
-
         return false;
+    }
+
+    /**
+     * @param string $token
+     *
+     * @return App_Model_User|null
+     * @throws Exception
+     */
+    public function identifyMD($token)
+    {
+        if (empty($token)) {
+            throw new Exception('token-invalid', 400);
+        }
+        $mdtoken = App_Model_MDToken::fetchOne([
+            'tokens' => $token
+        ]);
+        if (!$mdtoken) {
+           throw new Exception('token-invalid', 403);
+        }
+        return App_Model_User::fetchOne([
+            'id' =>  $mdtoken->userId
+        ]);
     }
 }
