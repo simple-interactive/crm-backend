@@ -6,7 +6,9 @@ class StyleController extends App_Controller_Base
 
     public function indexAction()
     {
-
+        $this->view->style = App_Map_Style::execute(
+            $this->getMenuService()->getStyle($this->user)
+        );
     }
 
     public function saveAction()

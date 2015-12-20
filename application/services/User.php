@@ -92,12 +92,14 @@ class App_Service_User
      */
     public function identifyMD($token)
     {
+
         if (empty($token)) {
             throw new Exception('token-invalid', 400);
         }
         $mdtoken = App_Model_MDToken::fetchOne([
             'tokens' => $token
         ]);
+
         if (!$mdtoken) {
            throw new Exception('token-invalid', 403);
         }
