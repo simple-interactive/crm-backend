@@ -600,8 +600,8 @@ class App_Service_Menu
             $style->userId = (string) $user->id;
         }
 
-        if (empty($colors['main'])) {
-            throw new \Exception('main-invalid');
+        if (empty($colors['brand'])) {
+            throw new \Exception('brand-invalid');
         }
         if (empty($colors['foreground'])) {
             throw new \Exception('foreground-invalid');
@@ -611,7 +611,7 @@ class App_Service_Menu
         }
 
         $style->colors = [
-            'main' => $colors ['main'],
+            'brand' => $colors ['brand'],
             'foreground' => $colors ['foreground'],
             'background' => $colors ['background']
         ];
