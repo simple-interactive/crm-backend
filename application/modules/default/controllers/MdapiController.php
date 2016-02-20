@@ -25,6 +25,10 @@ class MdapiController extends App_Controller_MDAuth
         $this->view->search = App_Map_Search::execute(App_Model_Search::fetchAll([
             'productId' => ['$in' => $ids]
         ]));
+
+        $this->view->settings = App_Map_Settings::execute(App_Model_Settings::fetchOne([
+            'userId' => (string) $this->user->id
+        ]));
     }
 
     public function orderAction()

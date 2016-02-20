@@ -1,11 +1,11 @@
 <?php
 
-class SettingController extends App_Controller_Base
+class SettingsController extends App_Controller_Base
 {
     public function indexAction()
     {
         if ($this->_request->isGet()) {
-            $setting = App_Model_Setting::fetchOne([
+            $setting = App_Model_Settings::fetchOne([
                 'userId' => (string) $this->user->id
             ]);
 
@@ -13,12 +13,12 @@ class SettingController extends App_Controller_Base
                 $this->view->settings = $setting->data;
         }
         else {
-            $setting = App_Model_Setting::fetchOne([
+            $setting = App_Model_Settings::fetchOne([
                 'userId' => $this->user->id
             ]);
 
             if (!$setting) {
-                $setting = new App_Model_Setting([
+                $setting = new App_Model_Settings([
                     'userId' => (string) $this->user->id
                 ]);
             }

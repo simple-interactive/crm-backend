@@ -1,13 +1,12 @@
 <?php
 
-class App_Map_Setting extends Mongostar_Map_Instance
+class App_Map_Settings extends Mongostar_Map_Instance
 {
     public function rulesCommon()
     {
         return [
-            'id' => 'id',
             'userId' => 'userId',
-            'liqpay' => 'liqpay'
+            'data' => 'data'
         ];
     }
 }
