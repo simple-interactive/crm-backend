@@ -10,7 +10,7 @@ class SettingController extends App_Controller_Base
             ]);
 
             if ($setting)
-                $this->view->liqpay = $setting->liqpay;
+                $this->view->settings = $setting->data;
         }
         else {
             $setting = App_Model_Setting::fetchOne([
@@ -22,7 +22,7 @@ class SettingController extends App_Controller_Base
                     'userId' => (string) $this->user->id
                 ]);
             }
-            $setting->liqpay = $this->getParam('liqpay', null);
+            $setting->data= $this->getParam('settings', null);
             $setting->save();
         }
     }
