@@ -14,7 +14,7 @@ class SettingsController extends App_Controller_Base
         }
         else {
             $setting = App_Model_Settings::fetchOne([
-                'userId' => $this->user->id
+                'userId' => (string) $this->user->id
             ]);
 
             if (!$setting) {
