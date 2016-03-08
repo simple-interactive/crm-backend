@@ -65,5 +65,12 @@ class StatisticsController extends App_Controller_Base
         $products = App_Model_STProduct::fetchAll($cond, [], $this->getParam('limit', 10), $this->getParam('offset', 0));
         $this->view->products = App_Map_STProduct::execute($products);
         $this->view->count = App_Model_STProduct::getCount($cond);
+
+        $price = 0;
+        foreach ($products as $product) {
+            $price += $product->price;
+        }
+
+        $this->view->price = $price;
     }
 }
