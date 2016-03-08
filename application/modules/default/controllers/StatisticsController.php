@@ -62,7 +62,7 @@ class StatisticsController extends App_Controller_Base
             $cond ['sectionId'] = (string) $section->sectionId;
         }
 
-        $products = App_Model_STProduct::fetchAll($cond);
+        $products = App_Model_STProduct::fetchAll($cond, [], $this->getParam('limit', 10), $this->getParam('offset', 0));
         $this->view->products = App_Map_STProduct::execute($products);
     }
 }
