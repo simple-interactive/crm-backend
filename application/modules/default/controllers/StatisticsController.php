@@ -66,6 +66,7 @@ class StatisticsController extends App_Controller_Base
         $this->view->products = App_Map_STProduct::execute($products);
         $this->view->count = App_Model_STProduct::getCount($cond);
 
+        $products = App_Model_STProduct::fetchAll($cond);
         $price = 0;
         foreach ($products as $product) {
             $price += $product->price;
