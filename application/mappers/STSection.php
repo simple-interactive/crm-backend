@@ -22,7 +22,7 @@ class App_Map_STSection extends Mongostar_Map_Instance
             ]);
             if (! $section)
                 break;
-            $result = $section->title . '::' . $result;
+            $result = $section->title . ' : ' . $result;
         }
 
         return $result;

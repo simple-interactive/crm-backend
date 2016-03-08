@@ -20,7 +20,7 @@ class App_Map_STProduct extends Mongostar_Map_Instance
             'id' => new \MongoId($product->sectionId)
         ]);
 
-        $result = $section->title . '::' . $product->title;
+        $result = $section->title . ' : ' . $product->title;
         while (isset($section->parentId)) {
             $section = App_Model_Section::fetchOne([
                 'id' => new \MongoId($section->parentId)
@@ -28,7 +28,7 @@ class App_Map_STProduct extends Mongostar_Map_Instance
 
             if (! $section)
                 break;
-            $result = $section->title . '::' . $result;
+            $result = $section->title . ' : ' . $result;
         }
         return $result;
     }
