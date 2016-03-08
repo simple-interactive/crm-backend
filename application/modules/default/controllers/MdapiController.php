@@ -52,7 +52,7 @@ class MdapiController extends App_Controller_MDAuth
                 $product = App_Model_Product::fetchOne([
                     'id' => new \MongoId($item ['product']['id'])
                 ]);
-                $service->putIntoStatistics($product);
+                $service->putIntoStatistics($product, $order);
             }
         }
     }
