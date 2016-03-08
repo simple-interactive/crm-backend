@@ -36,13 +36,19 @@ class StatisticsController extends App_Controller_Base
         $cond = [];
         $cond ['orderId'] = ['$in' => $ids];
 
-//        if ($productId = $this->getParam('productId', null)) {
-//            $cond ['productId'] = $productId;
-//        }
-//
-//        if ($sectionId = $this->getParam('sectionId', null)) {
-//            $cond ['sectionId'] = $sectionId;
-//        }
+        if ($productId = $this->getParam('productId', null)) {
+            $product = App_Model_STProduct::fetchOne([
+                'id' => new \MongoId($productId)
+            ]);
+            $cond ['productId'] = $product->productId;
+        }
+
+        if ($sectionId = $this->getParam('sectionId', null)) {
+            $section = App_Model_STSection::fetchOne([
+                'id' => new \MongoId($sectionId)
+            ]);
+            $cond ['sectionId'] = (string) $section->sectionId;
+        }
 
         $products = App_Model_STProduct::fetchAll($cond);
         $this->view->products = App_Map_STProduct::execute($products);
