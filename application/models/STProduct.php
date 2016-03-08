@@ -12,6 +12,7 @@
  * @property float   $price
  * @property integer $weight
  * @property \MongoDate $createdAt
+ * @property string $userId
  *
  * @method static App_Model_STProduct [] fetchAll(array $cond = null, array $sort = null, $count = null, $offset = null, $hint = NULL)
  * @method static App_Model_STProduct|null fetchOne(array $cond = null, array $sort = null)

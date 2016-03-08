@@ -13,6 +13,7 @@ class App_Service_Statistics
         $stproduct = new App_Model_STProduct($data);
         $stproduct->orderId = (string) $order->id;
         $stproduct->productId = (string) $product->id;
+        $stproduct->userId = $order->userId;
         $stproduct->createdAt = new \MongoDate();
         $stproduct->save();
 
@@ -26,6 +27,7 @@ class App_Service_Statistics
             $stsection->sectionId = $product->sectionId;
             $stsection->title = $section->title;
             $stsection->parentId = $section->parentId;
+            $stsection->userId = $order->userId;
             $stsection->save();
         }
 
@@ -35,12 +37,14 @@ class App_Service_Statistics
                     'id' => new \MongoId($ingredient['id'])
                 ]);
                 $stIngredient = App_Model_STIngredient::fetchOne([
-                    'ingredientId' => (string) $ingredient->id
+                    'ingredientId' => (string) $ingredient->id,
+                    'userId' => $order->userId
                 ]);
                 if (!$stIngredient) {
                     $stIngredient = new App_Model_STIngredient([
                         'ingredientId' => (string) $ingredient->id,
-                        'title' => $ingredient->title
+                        'title' => $ingredient->title,
+                        'userId' => $order->userId
                     ]);
                     $stIngredient->save();
                 }

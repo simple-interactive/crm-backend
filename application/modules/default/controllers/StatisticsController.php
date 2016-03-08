@@ -4,9 +4,22 @@ class StatisticsController extends App_Controller_Base
 {
     public function filtersAction()
     {
-        $this->view->ingredients = App_Map_STIngredient::execute(App_Model_STIngredient::fetchAll());
-        $this->view->products = App_Map_STProduct::execute(App_Model_STProduct::fetchAll());
-        $this->view->sections = App_Map_STSection::execute(App_Model_STSection::fetchAll());
+        $this->view->ingredients = App_Map_STIngredient::execute(App_Model_STIngredient::fetchAll([
+            'userId' => (string) $this->user->id
+        ]));
+
+        $distinctIds = App_Model_STProduct::getMapper()->getCollection()->distinct('productId', [
+            'userId' => (string) $this->user->id
+        ]);
+
+        $this->view->products = App_Map_STProduct::execute(App_Model_STProduct::fetchAll([
+            'productId' => ['$in' => $distinctIds],
+            'userId' => (string) $this->user->id
+        ]));
+
+        $this->view->sections = App_Map_STSection::execute(App_Model_STSection::fetchAll([
+            'userId' => (string) $this->user->id
+        ]));
     }
 
     public function dataAction()
@@ -31,7 +44,6 @@ class StatisticsController extends App_Controller_Base
         $ids = array_map(function($order){
             return (string) $order->id;
         }, $orders->asArray());
-
 
         $cond = [];
         $cond ['orderId'] = ['$in' => $ids];

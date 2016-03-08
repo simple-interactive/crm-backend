@@ -6,6 +6,7 @@
  * @property MongoId $id
  * @property string  $ingredientId
  * @property string  $title
+ * @property string  $userId
  *
  * @method static App_Model_STIngredient [] fetchAll(array $cond = null, array $sort = null, $count = null, $offset = null, $hint = NULL)
  * @method static App_Model_STIngredient|null fetchOne(array $cond = null, array $sort = null)
