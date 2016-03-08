@@ -43,6 +43,7 @@ class MdapiController extends App_Controller_MDAuth
             $order->status = $item['status'];
             $order->createdDate = $item['createdDate'];
             $order->payStatus = $item['payStatus'];
+            $order->paymentMethod = $item['paymentMethod'];
             $order->tableId = $item['tableId'];
             $order->userId = (string) $this->user->id;
             $order->save();

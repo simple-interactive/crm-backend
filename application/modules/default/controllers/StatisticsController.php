@@ -11,22 +11,10 @@ class StatisticsController extends App_Controller_Base
 
     public function dataAction()
     {
-//        endTime: 1457457744
-//        startTime: 1457371344
-//
-//        ingredientId: "56df05fb615307533e8b4576"
-//        sectionId: "56df05fb615307533e8b4576"
-//        productId: "56df05fb615307533e8b4576"
-//
-//        paymentMethod: "card" | «cash»
-//        status: "success" | «canceled»
-//
-//        query: «some search»
-
         $cond = [
             'createdDate' => [
-                '$gt' => $this->getParam('startTime', 0),
-                //'$lt' => $this->getParam('endTime', 0)
+                '$gte' => $this->getParam('startTime', 0),
+                '$lte' => $this->getParam('endTime', 0)
             ],
             'userId' => (string) $this->user->id
         ];
@@ -44,16 +32,17 @@ class StatisticsController extends App_Controller_Base
             return (string) $order->id;
         }, $orders->asArray());
 
+
         $cond = [];
         $cond ['orderId'] = ['$in' => $ids];
 
-        if ($productId = $this->getParam('productId', null)) {
-            $cond ['productId'] = $productId;
-        }
-
-        if ($sectionId = $this->getParam('sectionId', null)) {
-            $cond ['sectionId'] = $sectionId;
-        }
+//        if ($productId = $this->getParam('productId', null)) {
+//            $cond ['productId'] = $productId;
+//        }
+//
+//        if ($sectionId = $this->getParam('sectionId', null)) {
+//            $cond ['sectionId'] = $sectionId;
+//        }
 
         $products = App_Model_STProduct::fetchAll($cond);
         $this->view->products = App_Map_STProduct::execute($products);
