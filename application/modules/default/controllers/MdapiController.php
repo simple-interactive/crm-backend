@@ -39,14 +39,21 @@ class MdapiController extends App_Controller_MDAuth
         }
         foreach ($orders as $item) {
             $order = new App_Model_Order();
-            $order->id = new \MongoId($item['id']['$id']);
-            $order->data = $item['data'][0];
+            $order->data = $item['data'];
             $order->status = $item['status'];
             $order->createdDate = $item['createdDate'];
             $order->payStatus = $item['payStatus'];
             $order->tableId = $item['tableId'];
             $order->userId = (string) $this->user->id;
             $order->save();
+
+            $service = new App_Service_Statistics();
+            foreach ($order->data as $item) {
+                $product = App_Model_Product::fetchOne([
+                    'id' => new \MongoId($item ['product']['id'])
+                ]);
+                $service->putIntoStatistics($product);
+            }
         }
     }
 

@@ -33,7 +33,8 @@ class App_Map_Product extends Mongostar_Map_Instance
             'images' => 'images',
             'ingredients' => 'ingredients',
             'options' => 'options',
-            'exists' => 'exists'
+            'exists' => 'exists',
+            'hashForSt' => 'hashForSt'
         ];
     }
 
