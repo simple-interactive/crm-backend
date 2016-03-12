@@ -653,4 +653,11 @@ class App_Service_Menu
             'userId' => (string) $user->id
         ]);
     }
+
+    public function getAllIngredients(App_Model_User $user)
+    {
+        return App_Model_Ingredient::fetchAll([
+            'userId' => (string) $user->id
+        ]);
+    }
 } 

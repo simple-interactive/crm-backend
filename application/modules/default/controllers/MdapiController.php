@@ -15,6 +15,9 @@ class MdapiController extends App_Controller_MDAuth
         $this->view->style = App_Map_Style::execute(
             $this->getMenuService()->getStyle($this->user)
         );
+        $this->view->ingredients = App_Map_Ingredient::execute(
+            $this->getMenuService()->getAllIngredients($this->user)
+        );
         $products = App_Model_Product::fetchAll([
             'userId' => (string) $this->user->id
         ]);
