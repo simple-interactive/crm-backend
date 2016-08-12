@@ -247,10 +247,10 @@ class App_Service_Menu
         elseif ($product->userId != (string) $user->id) {
             throw new Exception('permission-denied', 400);
         }
-        if (!$title || mb_strlen($title, 'UTF-8') < 2 || mb_strlen($title, 'UTF-8') > 20) {
+        if (!$title) {
             throw new Exception('product-title-invalid', 400);
         }
-        if (!$description || mb_strlen($description, 'UTF-8') < 2 || mb_strlen($description, 'UTF-8') > 300) {
+        if (!$description) {
             throw new Exception('product-description-invalid', 400);
         }
         if (gettype($price + 0.0) != 'double' || $price < 0) {
